@@ -1,0 +1,5 @@
+services:
+  test-api:
+    image: distributed-go/test-api
+    ports:
+      - "8080:8080"
