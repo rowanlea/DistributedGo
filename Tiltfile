@@ -1,9 +1,14 @@
-# 1. Load the official ko extension from Tilt's registry
-load('ext://ko', 'ko_build')
-
-# 2. Point Tilt to your Docker Compose file
 docker_compose('docker-compose.yml')
 
-# 3. Tell Tilt to build the images using ko instead of Docker
-# The first argument MUST match the image name in docker-compose.yml
-ko_build('distributed-go/test-api', './cmd/TestAPI')
+def ko_service(name, path):
+    custom_build(
+        name,
+        # macOS / Linux / CI
+        command='KO_DOCKER_REPO=$EXPECTED_IMAGE ko publish --local --bare --tags $EXPECTED_TAG ' + path,
+        # Windows (cmd.exe) — avoids bash / WSL entirely
+        command_bat='set KO_DOCKER_REPO=%EXPECTED_IMAGE%&& ko publish --local --bare --tags %EXPECTED_TAG% ' + path,
+        deps=[path, 'go.mod', 'go.sum'],
+    )
+
+# Register services here:
+ko_service('distributed-go/test-api', './cmd/TestAPI')
